@@ -4,7 +4,7 @@ import wx
 from strategy_monitor import StrategyMonitorFrame
 
 class SellRiseStrategy:
-    def __init__(self, ib, contract, quantity, diff, frame):
+    def __init__(self, ib, contract, quantity, diff, frame, start_price=None):
         self.ib = ib
         self.contract = contract
         self.qty = quantity
@@ -13,6 +13,7 @@ class SellRiseStrategy:
         self.active = True
         self.last_price = frame.last_price
         self.indic_price = None
+        self.start_price = start_price
         self.monitor_frame = StrategyMonitorFrame(
             None, self.last_price, self.last_price - self.diff if self.last_price else None, "Sell"
         )
@@ -21,6 +22,26 @@ class SellRiseStrategy:
 
     def _run(self):
         max_price = self.last_price
+
+        # Если указана стартовая цена, ждем ее достижения
+        if self.start_price is not None:
+            while self.active:
+                last_price = self.frame.last_price
+                if last_price is None:
+                    time.sleep(0.2)
+                    continue
+
+                wx.CallAfter(self.monitor_frame.update_info, self.start_price, last_price)
+                wx.CallAfter(
+                    self.monitor_frame.set_message,
+                    f"Ожидание достижения стартовой цены {self.start_price:.2f}"
+                )
+
+                if last_price >= self.start_price:
+                    max_price = last_price
+                    break
+
+                time.sleep(0.2)
 
         # Фаза трейлинга индикативной цены
         while self.active:
@@ -35,7 +56,7 @@ class SellRiseStrategy:
             self.indic_price = max_price - self.diff
             wx.CallAfter(self.monitor_frame.update_info, self.indic_price, last_price)
 
-            # Как только откат от максимума >= diff — фиксируем трейлинг
+            # Как только падение от максимума >= diff — фиксируем трейлинг
             if last_price <= max_price - self.diff:
                 break
 

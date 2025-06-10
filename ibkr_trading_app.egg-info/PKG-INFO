@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: ibkr_trading_app
+Version: 0.1
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: ibapi>=9.81.1
+Requires-Dist: wxPython>=4.2.0
+Requires-Dist: pytz
+Dynamic: requires-dist

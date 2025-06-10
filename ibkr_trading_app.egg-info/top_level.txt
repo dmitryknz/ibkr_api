@@ -1,0 +1,6 @@
+Indicators
+core
+data
+gui
+strategies
+utils
